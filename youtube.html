@@ -11,17 +11,24 @@
 <body>
     <h1>Embed YouTube Video</h1>
     <form onsubmit="embedYouTube(event)">
-        <label for="youtubeID">Enter YouTube Video ID:</label>
-        <input type="text" id="youtubeID" name="youtubeID" placeholder="e.g., dQw4w9WgXcQ" required>
+        <label for="youtubeInput">Enter YouTube Video URL or ID:</label>
+        <input type="text" id="youtubeInput" name="youtubeInput" placeholder="e.g., https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ" required>
         <button type="submit">Embed Video</button>
     </form>
 
     <iframe id="youtubeIframe" width="560" height="315" style="border: none; margin-top: 20px;" allowfullscreen></iframe>
 
     <script>
+        function extractVideoID(input) {
+            const urlPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = input.match(urlPattern);
+            return match ? match[1] : input; // Return the matched video ID or the input itself if it's already an ID
+        }
+
         function embedYouTube(event) {
             event.preventDefault(); // Prevent form submission
-            const videoID = document.getElementById('youtubeID').value.trim();
+            const userInput = document.getElementById('youtubeInput').value.trim();
+            const videoID = extractVideoID(userInput);
             const iframe = document.getElementById('youtubeIframe');
             iframe.src = `https://www.youtube.com/embed/${videoID}`; // Update the iframe with the embed URL
         }
