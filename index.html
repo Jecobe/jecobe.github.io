@@ -24,3 +24,27 @@ The growing directory of HTML games<br />
         }
     </script>
 </body>
+
+<body>
+    <h3>Change Tab Favicon (little image next to the tab title)</h3>
+    <form onsubmit="changeFavicon(event)">
+        <label for="faviconURL">Enter Favicon Image URL:</label>
+        <input type="url" id="faviconURL" name="faviconURL" required>
+        <button type="submit">Change Favicon</button>
+    </form>
+
+    <script>
+        function changeFavicon(event) {
+            event.preventDefault(); // Prevent form submission
+            const faviconURL = document.getElementById('faviconURL').value;
+            let link = document.querySelector("link[rel*='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = faviconURL; // Change the favicon
+        }
+    </script>
+</body>
+</html>
