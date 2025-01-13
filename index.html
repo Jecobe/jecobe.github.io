@@ -14,3 +14,20 @@ The growing directory of HTML games<br />
 <input type="url"><br />
   <input type="submit" value="Submit"><br />
 </form>
+
+<body>
+    <h1>Change Your Tab Title</h1>
+    <form onsubmit="changeTitle(event)">
+        <label for="tabTitle">Enter New Title:</label>
+        <input type="text" id="tabTitle" name="tabTitle" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        function changeTitle(event) {
+            event.preventDefault(); // Prevent form submission
+            const newTitle = document.getElementById('tabTitle').value;
+            document.title = newTitle; // Change the tab title
+        }
+    </script>
+</body>
