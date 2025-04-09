@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>School Unblocker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 80px;
+      background-color: #f0f0f0;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .instructions {
+      max-width: 600px;
+      margin: 40px auto 0;
+      text-align: left;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Unblocker Tool</h1>
+  <p>Click the button below to launch the unblocker in infinite tabs.</p>
+  <button onclick="launch()">Open Unblocker</button>
+
+  <div class="instructions">
+    <h2>Pop-Up Blocker Help</h2>
+    <p>If nothing happens when you click the button, your browser’s pop-up blocker might be stopping it. Here’s how to allow pop-ups:</p>
+
+    <h3>🌐 Chrome (Mac/Windows)</h3>
+<ul>
+  <li>After clicking the button, look at the address bar for a small icon that looks like a blocked popup.</li>
+  <li>Click that icon.</li>
+  <li>Select <strong>“Always allow pop-ups and redirects from this site”</strong>.</li>
+  <li>Click <strong>Done</strong>, then refresh the page and try again.</li>
+</ul>
+
+<h3>🧭 Safari (Mac)</h3>
+<ul>
+  <li>Open Safari and click on the top menu: <strong>Safari &gt; Settings</strong>.</li>
+  <li>Click the <strong>Websites</strong> tab.</li>
+  <li>Select <strong>Pop-up Windows</strong> on the left.</li>
+  <li>Find this website in the list and set it to <strong>Allow</strong>.</li>
+  <li>If it's not listed, visit the page again, then it should appear.</li>
+</ul>
+
+  <script>
+    function launch() {
+      while (true) {
+        window.open("OpenMe.html", "_blank");
+      }
+    }
+  </script>
+
+</body>
+</html>
