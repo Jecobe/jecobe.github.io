@@ -1,105 +1,77 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Rank Every Drake Song</title>
-  <style>
-    body { font-family:sans-serif; padding:20px; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { padding:8px; border:1px solid #ccc; text-align:left; }
-    input.rank { width:50px; }
-    input.dup { background: #fdd; }
-  </style>
+<head><meta charset="utf-8"><title>Rank Every Drake Song</title>
+<style>
+  body {font-family:sans-serif; padding:20px;}
+  table {width:100%; border-collapse:collapse;}
+  th,td {padding:8px;border:1px solid #ccc;}
+  input.rank {width:60px;}
+  input.dup {background:#fdd;}
+</style>
 </head>
 <body>
-  <h1>Rank Every Drake Song</h1>
-  <button onclick="exportCSV()">Export Rankings CSV</button>
-  <div id="warn" style="color:red;margin:10px 0;"></div>
-  <table id="songTable">
-    <thead><tr><th>Rank</th><th>Song Title</th></tr></thead>
-    <tbody></tbody>
-  </table>
+<h1>Rank Every Drake Song</h1>
+<button onclick="exportCSV()">Export Rankings CSV</button>
+<div id="warn" style="color:red;margin:10px;"></div>
+<table id="songTable"><thead><tr><th>Rank</th><th>Song Title</th></tr></thead><tbody></tbody></table>
 
 <script>
-  // ✅ Replace this list with *every single* Drake song title.
-  const songs = [
-    "Tuscan Leather",
-    "5AM in Toronto",
-    "Jungle",
-    "God's Plan",
-    // … paste all 400+ song titles here …
-  ];
-
-  let state = {}; // title → rank
-
-  function loadState() {
-    const data = localStorage.getItem('drakeRanks');
-    if (data) state = JSON.parse(data);
-  }
-
-  function saveState() {
-    localStorage.setItem('drakeRanks', JSON.stringify(state));
-  }
-
-  function render() {
-    const tbody = document.querySelector('#songTable tbody');
-    tbody.innerHTML = '';
-    const entries = songs.map(title => ({title, rank: state[title]||''}))
-                         .sort((a,b) => {
-                           if(a.rank && b.rank) return a.rank - b.rank;
-                           if(a.rank) return -1;
-                           if(b.rank) return 1;
-                           return a.title.localeCompare(b.title);
-                         });
-    const seen = {};
-    let dup = false;
-    entries.forEach(e => {
-      if(e.rank) {
-        seen[e.rank] = (seen[e.rank]||0) + 1;
-        if(seen[e.rank] > 1) dup = true;
-      }
-    });
-    document.getElementById('warn').textContent = dup
-      ? '⚠️ Duplicate ranks detected!' : '';
-    entries.forEach(e => {
-      const tr = document.createElement('tr');
-      const tdRank = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.className = 'rank';
-      inp.value = e.rank;
-      inp.onchange = () => {
-        const v = parseInt(inp.value);
-        if(v && v > 0) state[e.title] = v;
-        else delete state[e.title];
-        saveState();
-        render();
-      };
-      tdRank.appendChild(inp);
-      if(e.rank && seen[e.rank] > 1) inp.classList.add('dup');
-      tr.appendChild(tdRank);
-      const tdTitle = document.createElement('td');
-      tdTitle.textContent = e.title;
-      tr.appendChild(tdTitle);
-      tbody.appendChild(tr);
-    });
-  }
-
-  function exportCSV() {
-    const lines = [['Rank','Title']];
-    songs.forEach(title => {
-      const r = state[title];
-      if(r) lines.push([r,title]);
-    });
-    const csv = lines.map(r=>r.map(c=>`"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-    a.download = 'drake_song_ranks.csv';
-    a.click();
-  }
-
+let songs = [], state = {};
+async function fetchSongTitles() {
+  const resp = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Drake_(musician)_songs&cmlimit=500&format=json&origin=*');
+  const data = await resp.json();
+  songs = data.query.categorymembers.map(m=>m.title);
   loadState();
   render();
+}
+function loadState(){
+  const j = localStorage.getItem('drakeRanks');
+  if(j) state = JSON.parse(j);
+}
+function saveState(){
+  localStorage.setItem('drakeRanks',JSON.stringify(state));
+}
+function render(){
+  const tbody = document.querySelector('#songTable tbody');
+  tbody.innerHTML = '';
+  const seen = {}, entries = songs.map(title=>({title,rank:state[title]||''}))
+    .sort((a,b)=>{
+      if(a.rank && b.rank) return a.rank - b.rank;
+      if(a.rank) return -1;
+      if(b.rank) return 1;
+      return a.title.localeCompare(b.title);
+    });
+  let dup=false;
+  entries.forEach(e=>{if(e.rank){seen[e.rank] = (seen[e.rank]||0)+1; if(seen[e.rank]>1) dup=true;}});
+  document.getElementById('warn').textContent = dup?'⚠️ Duplicate ranks detected!':'';
+  entries.forEach(e=>{
+    const tr = document.createElement('tr');
+    const tdR = document.createElement('td'), inp=document.createElement('input');
+    inp.type='number'; inp.className='rank'; inp.value=e.rank;
+    inp.onchange = ()=>{
+      const v=parseInt(inp.value);
+      if(v>0) state[e.title]=v;
+      else delete state[e.title];
+      saveState(); render();
+    };
+    if(e.rank && seen[e.rank]>1) inp.classList.add('dup');
+    tdR.appendChild(inp); tr.appendChild(tdR);
+    const tdT = document.createElement('td'); tdT.textContent=e.title;
+    tr.appendChild(tdT); tbody.appendChild(tr);
+  });
+}
+function exportCSV(){
+  const lines=[['Rank','Title']];
+  songs.forEach(t=>{
+    const r=state[t];
+    if(r) lines.push([r,t]);
+  });
+  const csv = lines.map(r=>r.map(c=>`"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='drake_song_ranks.csv'; a.click();
+}
+fetchSongTitles();
 </script>
 </body>
 </html>
