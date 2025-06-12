@@ -1,91 +1,292 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Rank Every Drake Song</title>
-<style>
-  body {font-family:sans-serif; padding:20px;}
-  table {width:100%; border-collapse:collapse;}
-  th,td {padding:8px;border:1px solid #ccc;}
-  input.rank {width:60px;}
-  input.dup {background:#fdd;}
-</style></head><body>
-<h1>Rank Every Drake Song</h1>
-<button onclick="exportCSV()">Export Rankings CSV</button>
-<div id="warn" style="color:red;margin:10px;"></div>
-<table id="songTable"><thead><tr><th>Rank</th><th>Song Title</th></tr></thead><tbody></tbody></table>
-<script>
-let songs = [], state = {};
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drake Song Rankings</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { margin-bottom: 10px; }
+    #notification p { color: red; margin: 5px 0; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 5px 0; }
+    input[type="number"] { width: 50px; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Drake Song Rankings</h1>
+  <div id="notification"></div>
+  <ul id="songList"></ul>
 
-async function fetchSongs() {
-  let cmcontinue = '', res;
-  do {
-    res = await fetch(`https://drake.fandom.com/api.php?action=query&list=categorymembers&cmtitle=Category:Songs&cmlimit=500&format=json&origin=*&cmcontinue=${cmcontinue}`);
-    const data = await res.json();
-    songs = songs.concat(data.query.categorymembers.map(m => m.title));
-    cmcontinue = data.continue?.cmcontinue;
-  } while (cmcontinue);
-  songs = Array.from(new Set(songs)).sort();
-  loadState(); render();
-}
+  <script>
+    const songs = [
+      "0 to 100/ The Catch Up (2014)",
+      "10 Bands (2015)",
+      "305 to My City (2013)",
+      "5AM In Toronto (2013)",
+      "6 God (2014)",
+      "6 Man (2015)",
+      "6PM in New York (2015)",
+      "7AM On Bridle Path (2021)",
+      "8 out of 10 (2018)",
+      "8AM In Charlotte (2023)",
+      "9 (2016)",
+      "All Me (2013)",
+      "Another Late Night (2023)",
+      "Back to Back (2015)",
+      "BackOutsideBoyz (2022)",
+      "Behind Barz (2018)",
+      "Best I Ever Had (2009)",
+      "Blem (2017)",
+      "Blue Green Red (2024)",
+      "Blue Tint (2018)",
+      "Buried Alive Interlude (2011)",
+      "Calling For You (2023)",
+      "Cameras/Good Ones Go (2011)",
+      "Can I (2015)",
+      "Can't Take a Joke (2018)",
+      "Cece's Interlude (2010)",
+      "Champagne Poetry (2021)",
+      "Charged Up (2015)",
+      "Chicago Freestyle (2020)",
+      "Child's Play (2016)",
+      "Circadian Rhythm (2024)",
+      "Club Paradise (2011)",
+      "Connect (2013)",
+      "Controlla (2016)",
+      "Crew Love (2011)",
+      "D4L Freestyle (2020)",
+      "Daylight (2023)",
+      "Days in the East (2014)",
+      "Deep Pockets (2020)",
+      "Demons (2020)",
+      "Diplomatic Immunity (2018)",
+      "Do Not Disturb (2017)",
+      "Doing It Wrong (2011)",
+      "Don't Matter to Me (2018)",
+      "Draft Day (2014)",
+      "Dreams Money Can Buy (2011)",
+      "Duppy Freestyle (2018)",
+      "Elevate (2018)",
+      "Emotionless (2018)",
+      "Energy (2015)",
+      "Fair Trade (2021)",
+      "Faithful (2016)",
+      "Fake Love (2016)",
+      "Falling Back (2022)",
+      "Family Matters (2024)",
+      "Fancy (2010)",
+      "Fear (2009)",
+      "Fear Of Heights (2023)",
+      "Feel No Ways (2016)",
+      "Final Fantasy (2018)",
+      "Find Your Love (2010)",
+      "Finesse (2018)",
+      "Fire & Desire (2016)",
+      "Fireworks (2010)",
+      "First Person Shooter (2023)",
+      "Forever (2009)",
+      "Fountains (2021)",
+      "Free Smoke (2017)",
+      "Free Spirit (2011)",
+      "From Florida with Love (2020)",
+      "From Time (2013)",
+      "Furthest Thing (2013)",
+      "Gently (2023)",
+      "Get It Together (2017)",
+      "Gimme A Hug (2025)",
+      "Girls Love Beyoncé (2013)",
+      "Girls Want Girls (2021)",
+      "God's Plan (2018)",
+      "Grammys (2016)",
+      "Gyalchester (2017)",
+      "Headlines (2011)",
+      "Heat of the Moment (2014)",
+      "Hold On We're Going Home (2013)",
+      "Hotline Bling (2015)",
+      "Houstatlantavegas (2009)",
+      "How About Now (2014)",
+      "HYFR (2011)",
+      "Hype (2016)",
+      "I Get Lonely (2010)",
+      "I'm Upset (2018)",
+      "IDGAF (2023)",
+      "In My Feelings (2018)",
+      "In The Bible (2021)",
+      "Is There More (2018)",
+      "It's Up (2024)",
+      "Jaded (2018)",
+      "Jimmy Cooks (2022)",
+      "Jodeci Freestyle (2013)",
+      "Jorja Interlude (2017)",
+      "Karaoke (2010)",
+      "Keep the Family Close (2016)",
+      "KMT (2017)",
+      "Knife Talk (2021)",
+      "Know Yourself (2015)",
+      "Laugh Now Cry Later (2020)",
+      "Lemon Pepper Freestyle (2021)",
+      "Light Up (2010)",
+      "Look What You've Done (2011)",
+      "Lord Knows (2011)",
+      "Losses (2020)",
+      "Love All (2021)",
+      "Madonna (2015)",
+      "Make Me Proud (2011)",
+      "March 14 (2018)",
+      "Marvin's Room (2011)",
+      "Massive (2022)",
+      "Middle Of The Ocean (2022)",
+      "Miss Me (2010)",
+      "Mob Ties (2018)",
+      "Money in the Grave (2019)",
+      "N 2 Deep (2021)",
+      "Nice For What (2018)",
+      "No Face (2024)",
+      "No Friends In The Industry (2021)",
+      "No Long Talk (2017)",
+      "Nokia (2025)",
+      "Nonstop (2018)",
+      "Not You Too (2020)",
+      "November 18th (2009)",
+      "Omertá (2019)",
+      "On The Radar Freestyle (2023)",
+      "One Dance (2016)",
+      "Over (2010)",
+      "Over My Dead Body (2011)",
+      "Pain 1993 (2020)",
+      "Papi's Home (2021)",
+      "Paris Morton Music (2010)",
+      "Passionfruit (2017)",
+      "Peak (2018)",
+      "Pipe Down (2021)",
+      "Pop Style (2016)",
+      "Portland (2017)",
+      "Pound Cake/Paris Morton Music 2 (2013)",
+      "Practice (2011)",
+      "Push Ups (2024)",
+      "Race My Mind (2021)",
+      "Red Button (2023)",
+      "Redemption (2016)",
+      "Rich Baby Daddy (2023)",
+      "Right Hand (2013)",
+      "Sacrifices (2017)",
+      "Sandra's Rose (2018)",
+      "Search & Rescue (2023)",
+      "Shot For Me (2011)",
+      "Show Me a Good Time (2010)",
+      "Shut It Down (2009)",
+      "Signs (2017)",
+      "Slime You Out (2023)",
+      "Sneakin (2016)",
+      "Star67 (2015)",
+      "Started From The Bottom (2013)",
+      "Sticky (2022)",
+      "Still Here (2016)",
+      "Successful (2009)",
+      "Summer Games (2018)",
+      "Summer Sixteen (2016)",
+      "Summers Over Interlude (2016)",
+      "Survival (2018)",
+      "Take Care (2011)",
+      "Talk Up (2018)",
+      "Teenage Fever (2017)",
+      "Texts Go Green (2022)",
+      "Thank Me Now (2010)",
+      "That's How You Feel (2018)",
+      "The Heart Part 6 (2024)",
+      "The Language (2013)",
+      "The Motion (2013)",
+      "The Motto (2011)",
+      "The Real Her (2011)",
+      "The Ride (2011)",
+      "The Shoe Fits (2023)",
+      "Time Flies (2020)",
+      "Too Good (2016)",
+      "Too Much (2013)",
+      "Toosie Slide (2020)",
+      "Trophies (2013)",
+      "TSU (2021)",
+      "Tuscan Leather (2013)",
+      "Two Birds, One Stone (2016)",
+      "U with Me? (2016)",
+      "Under Ground Kings (2011)",
+      "Unforgettable (2010)",
+      "Uptown (2009)",
+      "Used To (2015)",
+      "Views (2016)",
+      "Virginia Beach (2023)",
+      "Wants And Needs (2021)",
+      "War (2019)",
+      "Way 2 Sexy (2021)",
+      "We Made It (2013)",
+      "We'll Be Fine (2011)",
+      "Weston Road Flows (2016)",
+      "What's Next (2021)",
+      "When to Say When (2020)",
+      "With You (2016)",
+      "Worst Behavior (2013)",
+      "Wu-Tang Forever (2013)",
+      "Yebba's Heartbreak (2021)",
+      "You & The 6 (2015)",
+      "You Broke My Heart (2023)"
+    ];
 
-function loadState(){
-  const j = localStorage.getItem('drakeRanks');
-  if (j) state = JSON.parse(j);
-}
-
-function saveState(){
-  localStorage.setItem('drakeRanks', JSON.stringify(state));
-}
-
-function render(){
-  const tbody = document.querySelector('#songTable tbody');
-  tbody.innerHTML = '';
-  const seen = {}, entries = songs.map(t=>({title:t, rank:state[t]||''}))
-    .sort((a,b)=>{
-      if (a.rank && b.rank) return a.rank - b.rank;
-      if (a.rank) return -1;
-      if (b.rank) return 1;
-      return a.title.localeCompare(b.title);
-    });
-  let dup = false;
-  entries.forEach(e => {
-    if (e.rank) {
-      seen[e.rank] = (seen[e.rank]||0) + 1;
-      if (seen[e.rank] > 1) dup = true;
+    function renderList() {
+      const stored = JSON.parse(localStorage.getItem('drakeSongRanks') || '{}');
+      const items = songs.map(title => ({
+        title,
+        rank: stored[title] !== undefined ? parseInt(stored[title]) : null
+      }));
+      // sort: ranked first ascending, unranked alphabetically
+      items.sort((a,b) => {
+        if (a.rank == null && b.rank == null) return a.title.localeCompare(b.title);
+        if (a.rank == null) return 1;
+        if (b.rank == null) return -1;
+        return a.rank - b.rank;
+      });
+      const ul = document.getElementById('songList');
+      ul.innerHTML = '';
+      items.forEach(obj => {
+        const li = document.createElement('li');
+        li.textContent = obj.title;
+        const inp = document.createElement('input');
+        inp.type = 'number';
+        inp.min = '1';
+        inp.value = obj.rank || '';
+        inp.addEventListener('change', () => {
+          const val = parseInt(inp.value);
+          if (isNaN(val)) delete stored[obj.title];
+          else stored[obj.title] = val;
+          localStorage.setItem('drakeSongRanks', JSON.stringify(stored));
+          renderList();
+        });
+        li.appendChild(inp);
+        ul.appendChild(li);
+      });
+      showNotifications();
     }
-  });
-  document.getElementById('warn').textContent = dup ? '⚠️ Duplicate ranks detected!' : '';
-  entries.forEach(e => {
-    const tr = document.createElement('tr');
-    const tdR = document.createElement('td');
-    const inp = document.createElement('input');
-    inp.type = 'number'; inp.className = 'rank'; inp.value = e.rank;
-    inp.onchange = () => {
-      const v = parseInt(inp.value);
-      if (v > 0) state[e.title] = v; else delete state[e.title];
-      saveState(); render();
-    };
-    if (e.rank && seen[e.rank] > 1) inp.classList.add('dup');
-    tdR.appendChild(inp);
-    const tdT = document.createElement('td');
-    tdT.textContent = e.title;
-    tr.appendChild(tdR);
-    tr.appendChild(tdT);
-    tbody.appendChild(tr);
-  });
-}
 
-function exportCSV(){
-  const lines = [['Rank','Title']];
-  songs.forEach(t => {
-    const r = state[t];
-    if (r) lines.push([r, t]);
-  });
-  const csv = lines.map(r => r.map(c => `"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = 'drake_song_ranks.csv';
-  a.click();
-}
+    function showNotifications() {
+      const notes = [];
+      // duplicate song entries
+      const seen = new Set(), dupSongs = new Set();
+      songs.forEach(t => seen.has(t) ? dupSongs.add(t) : seen.add(t));
+      if (dupSongs.size) notes.push("Duplicate song entries detected: " + Array.from(dupSongs).join(', '));
+      // duplicate ranks
+      const stored = JSON.parse(localStorage.getItem('drakeSongRanks') || '{}');
+      const rankMap = {};
+      Object.entries(stored).forEach(([t,r]) => {
+        rankMap[r] = rankMap[r] || [];
+        rankMap[r].push(t);
+      });
+      Object.entries(rankMap).forEach(([r,arr]) => {
+        if (arr.length > 1) notes.push(`Rank ${r} assigned to multiple songs: ${arr.join(', ')}`);
+      });
+      const div = document.getElementById('notification');
+      div.innerHTML = notes.map(n => `<p>${n}</p>`).join('');
+    }
 
-fetchSongs();
-</script>
-</body></html>
+    window.onload = renderList;
+  </script>
+</body>
+</html>
