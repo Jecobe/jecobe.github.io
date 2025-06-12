@@ -1,32 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Drake Song Rankings</title>
+  <meta charset="UTF-8" />
+  <title>Drake Songs Ranking</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { margin-bottom: 10px; }
-    #notification p { color: red; margin: 5px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
-    input[type="number"] { width: 60px; }
+    body { font-family: sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    th { background: #f0f0f0; cursor: pointer; }
+    input.rank { width: 60px; }
+    .duplicate { background-color: #ffe6e6; }
+    #notification { color: #b00; margin-top: 10px; display: none; }
+    #exportBtn { margin-bottom: 10px; padding: 6px 12px; }
   </style>
 </head>
 <body>
-  <h1>Drake Song Rankings</h1>
+
+  <h1>Drake Songs Ranking</h1>
+  <button id="exportBtn">Export to CSV</button>
   <div id="notification"></div>
-  <table>
+  <table id="songsTable">
     <thead>
       <tr>
-        <th>Song Title</th>
         <th>Rank</th>
+        <th>Title</th>
+        <th>Year</th>
       </tr>
     </thead>
-    <tbody id="songTableBody"></tbody>
+    <tbody></tbody>
   </table>
 
   <script>
+    // all Drake songs
     const songs = [
       "0 to 100/ The Catch Up (2014)",
       "10 Bands (2015)",
@@ -223,4 +228,122 @@
       "Uptown (2009)",
       "Used To (2015)",
       "Views (2016)",
-      "
+      "Virginia Beach (2023)",
+      "Wants And Needs (2021)",
+      "War (2019)",
+      "Way 2 Sexy (2021)",
+      "We Made It (2013)",
+      "We'll Be Fine (2011)",
+      "Weston Road Flows (2016)",
+      "What's Next (2021)",
+      "When to Say When (2020)",
+      "With You (2016)",
+      "Worst Behavior (2013)",
+      "Wu-Tang Forever (2013)",
+      "Yebba's Heartbreak (2021)",
+      "You & The 6 (2015)",
+      "You Broke My Heart (2023)"
+    ];
+
+    // load saved ranks or initialize
+    const ranks = JSON.parse(localStorage.getItem('drakeRanks') || "{}");
+    const tbody = document.querySelector('#songsTable tbody');
+    const notification = document.getElementById('notification');
+
+    function createRow(song) {
+      const tr = document.createElement('tr');
+      const [title, year] = song.match(/(.+)\s+\((\d{4})\)$/).slice(1);
+
+      // rank cell
+      const tdRank = document.createElement('td');
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = '1';
+      inp.className = 'rank';
+      inp.dataset.song = song;
+      inp.value = ranks[song] || '';
+      inp.addEventListener('change', onRankChange);
+      tdRank.appendChild(inp);
+
+      // title cell
+      const tdTitle = document.createElement('td');
+      tdTitle.textContent = title;
+
+      // year cell
+      const tdYear = document.createElement('td');
+      tdYear.textContent = year;
+
+      tr.append(tdRank, tdTitle, tdYear);
+      return tr;
+    }
+
+    function populate() {
+      tbody.innerHTML = '';
+      songs.forEach(song => tbody.appendChild(createRow(song)));
+      sortTable();
+      checkDupes();
+    }
+
+    function sortTable() {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => {
+        const aRank = parseInt(a.querySelector('input').value) || Infinity;
+        const bRank = parseInt(b.querySelector('input').value) || Infinity;
+        if (aRank !== bRank) return aRank - bRank;
+        return a.children[1].textContent.localeCompare(b.children[1].textContent);
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    }
+
+    function onRankChange(e) {
+      const key = e.target.dataset.song;
+      const val = e.target.value.trim();
+      if (val) ranks[key] = val;
+      else delete ranks[key];
+      localStorage.setItem('drakeRanks', JSON.stringify(ranks));
+      sortTable();
+      checkDupes();
+    }
+
+    function checkDupes() {
+      const inputs = Array.from(tbody.querySelectorAll('input.rank'));
+      const counts = {};
+      inputs.forEach(i => {
+        const v = i.value.trim();
+        if (v) counts[v] = (counts[v] || 0) + 1;
+        i.classList.remove('duplicate');
+      });
+      const dupes = Object.keys(counts).filter(v => counts[v] > 1);
+      if (dupes.length) {
+        notification.textContent = 'Duplicate rank(s): ' + dupes.join(', ');
+        notification.style.display = 'block';
+        inputs.forEach(i => {
+          if (i.value.trim() && counts[i.value.trim()] > 1) i.classList.add('duplicate');
+        });
+      } else {
+        notification.style.display = 'none';
+      }
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      let csv = 'Title,Year,Rank\n';
+      rows.forEach(r => {
+        const title = r.children[1].textContent.replace(/"/g, '""');
+        const year = r.children[2].textContent;
+        const rank = r.querySelector('input').value;
+        csv += `"${title}",${year},${rank}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'drake_songs_ranking.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    populate();
+  </script>
+</body>
+</html>
