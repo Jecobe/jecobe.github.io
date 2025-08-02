@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Scheme Check</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      font-size: 4em;
+      font-weight: bold;
+      color: black;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: black;
+        color: white;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="label">LIGHT</div>
+
+  <script>
+    const label = document.getElementById('label');
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    label.textContent = isDark ? 'DARK' : 'LIGHT';
+
+    // Update in real-time if user switches
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      label.textContent = e.matches ? 'DARK' : 'LIGHT';
+      document.body.style.backgroundColor = e.matches ? 'black' : 'white';
+      document.body.style.color = e.matches ? 'white' : 'black';
+    });
+  </script>
+</body>
+</html>
