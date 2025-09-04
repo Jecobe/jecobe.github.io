@@ -1,300 +1,67 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WebRTC Enabled? — Quick Check</title>
-  <meta name="description" content="Simple WebRTC capability checker for your browser." />
-  <style>
-    :root {
-      --bg: #0b1020;
-      --panel: #11162a;
-      --text: #e6e8f0;
-      --muted: #a6accd;
-      --ok: #16a34a;
-      --warn: #f59e0b;
-      --bad: #dc2626;
-      --accent: #7c3aed;
-      --border: #232a45;
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
-      background: radial-gradient(1200px 700px at 20% -10%, #1a2141 0%, var(--bg) 60%);
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
-    .card {
-      width: 100%;
-      max-width: 760px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
-      backdrop-filter: blur(6px);
-    }
-    h1 {
-      margin: 0 0 4px;
-      font-size: 24px;
-      letter-spacing: 0.2px;
-    }
-    .sub {
-      color: var(--muted);
-      margin: 0 0 16px;
-      font-size: 14px;
-    }
-    .pill {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(124, 58, 237, 0.15);
-      border: 1px solid rgba(124, 58, 237, 0.35);
-      color: #d6ccff;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.3px;
-      margin-left: 6px;
-      vertical-align: middle;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 16px;
-    }
-    @media (max-width: 640px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-    }
-    .row .label {
-      font-weight: 600;
-    }
-    .row .desc { color: var(--muted); font-size: 13px; margin-top: 2px; }
-    .left { display: grid; gap: 2px; }
-    .status {
-      font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid currentColor;
-      min-width: 120px;
-      text-align: center;
-      white-space: nowrap;
-    }
-    .ok { color: var(--ok); background: rgba(22,163,74,0.12); }
-    .warn { color: var(--warn); background: rgba(245,158,11,0.12); }
-    .bad { color: var(--bad); background: rgba(220,38,38,0.12); }
-    .muted { color: var(--muted); background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.22); }
-    .footer {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    button {
-      all: unset;
-      background: linear-gradient(180deg, #8b5cf6, #7c3aed);
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 8px 20px rgba(124,58,237,0.35);
-    }
-    button:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(124,58,237,0.35); }
-    code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 6px; }
-    .hr { height: 1px; background: var(--border); margin: 18px 0; }
-    .big-status {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 16px; border: 1px dashed var(--border); border-radius: 12px;
-      background: rgba(255,255,255,0.03); margin-top: 8px;
-    }
-  </style>
-</head>
-<body>
-  <main class="card" role="main" aria-labelledby="title">
-    <h1 id="title">WebRTC Check <span class="pill">GitHub Pages Ready</span></h1>
-    <p class="sub">This page checks whether your browser supports and can initialize core WebRTC features (without requesting camera/mic).</p>
+<html>
+<meta charset="utf-8">
+<title>WebRTC Deep Check</title>
+<pre id="log">Running…</pre>
+<script>
+(async () => {
+  const out = (m) => log.textContent += m + "\n";
+  const PC = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 
-    <div class="row big-status">
-      <div class="left">
-        <div class="label">Overall Verdict</div>
-        <div class="desc">High-level signal based on API presence + DataChannel offer.</div>
-      </div>
-      <div id="overall" class="status muted">Running…</div>
-    </div>
+  if (!PC) { out("❌ No RTCPeerConnection API — WebRTC not supported."); return; }
+  out("✅ API present.");
 
-    <div class="grid">
-      <div class="row">
-        <div class="left">
-          <div class="label">WebRTC APIs present</div>
-          <div class="desc">Checks for <code>RTCPeerConnection</code> and <code>mediaDevices</code>.</div>
-        </div>
-        <div id="apiStatus" class="status muted">Checking…</div>
-      </div>
+  let pc;
+  try {
+    pc = new PC({iceServers: [{urls: "stun:stun.l.google.com:19302"}]});
+    pc.createDataChannel("probe"); // permissionless
+  } catch (e) {
+    out("❌ Failed to construct RTCPeerConnection: " + e.name); return;
+  }
 
-      <div class="row">
-        <div class="left">
-          <div class="label">DataChannel offer</div>
-          <div class="desc">Creates an offer using <code>RTCPeerConnection</code> (no permissions needed).</div>
-        </div>
-        <div id="dcStatus" class="status muted">Checking…</div>
-      </div>
+  let gotAnyCandidate = false;
+  let candidateTypes = new Set();
 
-      <div class="row">
-        <div class="left">
-          <div class="label">Device enumeration</div>
-          <div class="desc">Can list device kinds (labels may be hidden without permission).</div>
-        </div>
-        <div id="enumStatus" class="status muted">Checking…</div>
-      </div>
+  pc.onicecandidate = (ev) => {
+    if (ev.candidate) {
+      gotAnyCandidate = true;
+      // parse candidate type (host/srflx/relay)
+      const m = ev.candidate.candidate.match(/ typ (\w+)/);
+      if (m) candidateTypes.add(m[1]);
+    }
+  };
 
-      <div class="row">
-        <div class="left">
-          <div class="label">Secure context</div>
-          <div class="desc">WebRTC requires HTTPS (GitHub Pages is HTTPS by default).</div>
-        </div>
-        <div id="secureStatus" class="status muted">Checking…</div>
-      </div>
-    </div>
+  pc.onicegatheringstatechange = () => {
+    out("ICE gathering state: " + pc.iceGatheringState);
+  };
 
-    <div class="hr"></div>
+  try {
+    const offer = await pc.createOffer({offerToReceiveAudio: false, offerToReceiveVideo: false});
+    await pc.setLocalDescription(offer);
+    out("✅ Created offer + setLocalDescription.");
 
-    <div class="footer">
-      <div>Tip: If you see “Blocked”, a browser policy/extension or enterprise setting may be disabling WebRTC.</div>
-      <div><button id="rerun">Run Check Again</button></div>
-    </div>
-  </main>
-
-  <script>
-    // Utility: pick vendor-prefixed RTCPeerConnection if needed
-    const RTCPeerConnectionCtor =
-      window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-
-    function setStatus(el, state, text) {
-      el.className = "status " + (state || "muted");
-      el.textContent = text;
+    // wait up to ~2s for candidates
+    await new Promise(r => setTimeout(r, 2000));
+    if (!gotAnyCandidate) {
+      out("⚠️ No ICE candidates received. Likely: extension/policy blocking STUN/UDP or ICE.");
+    } else {
+      out("✅ Got ICE candidates. Types: " + [...candidateTypes].join(", "));
+      if (!candidateTypes.size) out("(Could be mDNS host candidates, which hide real IPs.)");
     }
 
-    async function checkAPIs() {
-      const apiEl = document.getElementById('apiStatus');
-      const hasRPC = !!RTCPeerConnectionCtor;
-      const hasMD = !!(navigator.mediaDevices && typeof navigator.mediaDevices === 'object');
-      const hasGUM = !!(navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function');
-      if (hasRPC && hasMD) {
-        setStatus(apiEl, 'ok', 'Present');
-      } else if (hasRPC || hasMD || hasGUM) {
-        setStatus(apiEl, 'warn', 'Partial');
-      } else {
-        setStatus(apiEl, 'bad', 'Missing');
-      }
-      return { hasRPC, hasMD, hasGUM };
+    // Check if gathering finished
+    if (pc.iceGatheringState === "complete") {
+      out("✅ ICE gathering completed.");
+    } else {
+      out("⚠️ ICE gathering not complete (possibly blocked or slow).");
     }
+  } catch (e) {
+    out("❌ Offer/SDP failed: " + e.name);
+  } finally {
+    try { pc.close(); } catch {}
+  }
 
-    async function checkDataChannelOffer() {
-      const el = document.getElementById('dcStatus');
-      if (!RTCPeerConnectionCtor) {
-        setStatus(el, 'bad', 'Not available');
-        return { ok: false, error: 'No RTCPeerConnection' };
-      }
-
-      let pc;
-      try {
-        pc = new RTCPeerConnectionCtor({ iceServers: [] });
-        // Creating a DataChannel doesn't require permissions.
-        pc.createDataChannel('probe');
-        const offer = await pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: false });
-        await pc.setLocalDescription(offer);
-
-        // Simple sanity check: SDP should contain an application m-line for data.
-        const sdp = offer.sdp || '';
-        const hasDataMLine = /m=application\s+\d+\s+DTLS\/SCTP/i.test(sdp) || /m=application/i.test(sdp);
-        setStatus(el, hasDataMLine ? 'ok' : 'warn', hasDataMLine ? 'OK' : 'Unclear');
-        pc.close();
-        return { ok: hasDataMLine, offer };
-      } catch (err) {
-        if (pc && pc.close) try { pc.close(); } catch {}
-        // Common failures if WebRTC is enterprise-disabled or blocked by extensions/policies:
-        // NotAllowedError, NotSupportedError, SecurityError.
-        setStatus(el, 'bad', 'Blocked/Failed');
-        return { ok: false, error: String(err && err.name ? err.name : err) };
-      }
-    }
-
-    async function checkEnumerateDevices() {
-      const el = document.getElementById('enumStatus');
-      if (!navigator.mediaDevices || typeof navigator.mediaDevices.enumerateDevices !== 'function') {
-        setStatus(el, 'bad', 'Unavailable');
-        return { ok: false, counts: null };
-      }
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const counts = {
-          audioinput: devices.filter(d => d.kind === 'audioinput').length,
-          videoinput: devices.filter(d => d.kind === 'videoinput').length,
-          audiooutput: devices.filter(d => d.kind === 'audiooutput').length
-        };
-        const summary = `${counts.videoinput} cam • ${counts.audioinput} mic • ${counts.audiooutput} speaker`;
-        setStatus(el, 'ok', summary);
-        return { ok: true, counts };
-      } catch (err) {
-        setStatus(el, 'warn', 'Error/Restricted');
-        return { ok: false, error: String(err && err.name ? err.name : err) };
-      }
-    }
-
-    function checkSecureContext() {
-      const el = document.getElementById('secureStatus');
-      if (window.isSecureContext) {
-        setStatus(el, 'ok', 'HTTPS');
-        return true;
-      } else {
-        setStatus(el, 'bad', 'Not HTTPS');
-        return false;
-      }
-    }
-
-    function overallVerdict(parts) {
-      const el = document.getElementById('overall');
-      const { api, dc, secure } = parts;
-
-      if (!secure) { setStatus(el, 'bad', 'Not secure (HTTPS required)'); return; }
-      if (dc.ok && api.hasRPC) { setStatus(el, 'ok', 'Enabled'); return; }
-      if ((api.hasRPC || api.hasMD) && !dc.ok) { setStatus(el, 'warn', 'Partial / Possibly Blocked'); return; }
-      setStatus(el, 'bad', 'Not Supported');
-    }
-
-    async function runAll() {
-      setStatus(document.getElementById('overall'), 'muted', 'Running…');
-      const secure = checkSecureContext();
-      const api = await checkAPIs();
-      const dc = await checkDataChannelOffer();
-      const en = await checkEnumerateDevices();
-      overallVerdict({ api, dc, en, secure });
-    }
-
-    document.getElementById('rerun').addEventListener('click', runAll);
-    // Auto-run on load
-    runAll();
-  </script>
-</body>
+  out("\nNotes:\n- Extensions often block candidates (IP leak) but APIs remain, so 'WebRTC detected' is normal.\n- If you only want to hide IPs, mDNS/“anonymize local IPs” is enough.\n- If you want sites to *think WebRTC isn’t there*, you must disable it at the browser level (e.g., Firefox about:config -> media.peerconnection.enabled = false). Extensions generally can’t remove the API.");
+})();
+</script>
 </html>
