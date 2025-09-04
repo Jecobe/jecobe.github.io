@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browser Detection</title>
+  <style>
+    body {
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      font-size: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="browser"></div>
+
+  <script>
+    const userAgent = navigator.userAgent;
+    let browserName = "Unknown Browser";
+
+    if (userAgent.includes("Firefox")) {
+      browserName = "Firefox";
+    } else if (userAgent.includes("Edg")) {
+      browserName = "Microsoft Edge";
+    } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+      browserName = "Google Chrome";
+    } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+      browserName = "Safari";
+    } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+      browserName = "Opera";
+    }
+
+    document.getElementById("browser").innerText = `You are using: ${browserName}`;
+  </script>
+</body>
+</html>
